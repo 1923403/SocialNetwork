@@ -1,10 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-router.route('/')
-  .get(getContent)
-  .post(createContent)
-  .put(updateContent)
-  .delete(deleteContent);
+const { createContent } = require("../controller/content");
+
+router
+  .route("/")
+  // .get(getContent)
+  .post(createContent);
+// .put(updateContent)
+// .delete(deleteContent);
 
 module.exports = router;
