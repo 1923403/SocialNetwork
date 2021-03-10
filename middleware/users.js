@@ -6,6 +6,15 @@ const {
   visibilityRequirementsFulfilled,
 } = require("../lib/requirements");
 
+exports.isLoggedIn = (req, res, next) => {
+  next();
+}
+
+exports.isOwner = (req, res, next) => {
+  next();
+}
+
+
 exports.alreadyExists = async (req, res, next) => {
   const { userName, email } = req.body;
   if (await exists("users", "user_name", userName)) {
