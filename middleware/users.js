@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const { db, exists } = require("../lib/db");
 const {
   usernameRequirementsFulfilled,
@@ -7,13 +8,22 @@ const {
 } = require("../lib/requirements");
 
 exports.isLoggedIn = (req, res, next) => {
-  next();
-}
+  const token = req.cookies.token || "";
+  console.log(token);
+  const secret = "dadawafasfEEAFAEafeaar234r3qw";
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ msg: "unautorized" });
+    }
+    req.body.userId = decoded.id;
+    next();
+  });
+};
 
 exports.isOwner = (req, res, next) => {
   next();
-}
-
+};
 
 exports.alreadyExists = async (req, res, next) => {
   const { userName, email } = req.body;
