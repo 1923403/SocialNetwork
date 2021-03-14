@@ -7,8 +7,9 @@ const cors = require("cors");
 // Route files
 const contentRouter = require("./routes/content");
 // const followRouter = require('./routes/follow');
-// const newsfeedRouter = require('./routes/newsfeed');
+const newsfeedRouter = require("./routes/newsfeed");
 const usersRouter = require("./routes/users");
+const imageRouter = require("./routes/image");
 
 const app = express();
 
@@ -21,7 +22,8 @@ app.use(cors());
 
 app.use("/content", contentRouter);
 // app.use('/follow', followRouter);
-// app.use('/newsfeed', newsfeedRouter);
+app.use("/newsfeed", newsfeedRouter);
 app.use("/users", usersRouter);
+app.use("/image", imageRouter);
 
 module.exports = app;

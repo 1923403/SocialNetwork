@@ -3,12 +3,18 @@ const router = express.Router();
 
 const { isLoggedIn } = require("../middleware/users");
 const { requirementsFullfilled } = require("../middleware/content");
-const { createContent } = require("../controller/content");
+const { createContent, storage } = require("../controller/content");
+const multer = require("multer");
 
 router
   .route("/")
   // .get(getContent)
-  .post(isLoggedIn, requirementsFullfilled, createContent);
+  .post(
+    isLoggedIn,
+    requirementsFullfilled,
+    multer({ storage: storage }).single("image"),
+    createContent
+  );
 // .put(updateContent)
 // .delete(deleteContent);
 

@@ -1,21 +1,11 @@
 const { db } = require("../lib/db");
 const uuid = require("uuid");
+const multer = require("multer");
 
 exports.createContent = (req, res) => {
   const { userId, userName, title, content, description } = req.body;
   console.log(req.body);
   console.log(userId);
-
-  // const sql = `SELECT id FROM users WHERE LOWER(user_name) = LOWER(${db.escape(
-  //   userName
-  // )})`;
-  // db.query(sql, (err, result) => {
-  //   if (err || result.length === 0) {
-  //     console.log(err);
-
-  //     return res.status(500).send({ msg: "Cannot insert into database" });
-  //   }
-  //   const userId = result[0]["id"];
 
   const sql = `INSERT INTO content (id, user_id, title, content, description, created_at) VALUES (${db.escape(
     uuid.v4()
@@ -31,5 +21,26 @@ exports.createContent = (req, res) => {
   });
 
   return res.status(201).send({ msg: "Content added to database" });
-  // });
 };
+
+const MIME_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+};
+
+exports.storage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    const isValid = MIME_TYPE_MAP[file.mimetype];
+    let err = new Error("Invalid mime type");
+    if (isValid) {
+      err = null;
+    }
+    callback(err, "data/imageData");
+  },
+  filename: (req, file, callback) => {
+    const name = file.originalname.toLocaleLowerCase.split(" ").join("-");
+    const ext = MIME_TYPE_MAP[file.mimetype];
+    callback(null, name + "-" + Date.now() + "." + ext);
+  },
+});
