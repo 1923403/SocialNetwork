@@ -12,4 +12,12 @@ router.post("/login", login);
 
 router.put("/update", isLoggedIn, isOwner, validateUpdate, update)
 
+router.get("/:id",(req, res)=>{
+    res.status(200).send({user: {
+        name: req.params.id,
+        profilePicture: null,
+        email: req.params.id +"@test.de"
+    }})
+})
+
 module.exports = router;
