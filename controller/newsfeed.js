@@ -2,6 +2,9 @@ const { db } = require("../lib/db");
 
 exports.getNewsfeed = (req, res) => {
   //just for testing frontend
+  const header = req.headers;
+  console.log("header");
+  console.log(header);
   const sql =
     "SELECT users.user_name, content.title, content.content, content.description, content.created_at FROM content INNER JOIN users ON content.user_id = users.id ORDER BY content.created_at DESC;";
   db.query(sql, (err, result) => {

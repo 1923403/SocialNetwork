@@ -8,12 +8,12 @@ const {
 } = require("../lib/requirements");
 
 exports.isLoggedIn = (req, res, next) => {
-  const token = req.cookies.token || "";
+  const authorization = req.headers.authorization || "";
+  const token = authorization.split(" ")[1];
   console.log(token);
   const secret = "dadawafasfEEAFAEafeaar234r3qw";
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
-      console.log(err);
       return res.status(401).send({ msg: "unautorized" });
     }
     req.body.userId = decoded.id;

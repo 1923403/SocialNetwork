@@ -12,7 +12,7 @@ router
   .post(
     isLoggedIn,
     requirementsFullfilled,
-    multer({ storage: storage }).single("image"),
+    multer({ storage: storage }).single("content"),
     createContent
   );
 // .put(updateContent)

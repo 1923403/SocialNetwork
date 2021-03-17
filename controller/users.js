@@ -42,7 +42,7 @@ exports.login = (req, res) => {
     const token = jwt.sign(
       { id: result[0]["id"] },
       "dadawafasfEEAFAEafeaar234r3qw",
-      { expiresIn: "1d" }
+      { expiresIn: "1h" }
     );
 
     const sql = `UPDATE users SET last_login = now() WHERE LOWER(user_name) = LOWER(${db.escape(
@@ -52,10 +52,12 @@ exports.login = (req, res) => {
       if (err) console.log(err);
     });
 
-    return res
-      .status(200)
-      .cookie("token", token)
-      .send({ msg: "logged in", user: userName });
+    return (
+      res
+        .status(200)
+        // .cookie("token", token)
+        .send({ msg: "logged in", user: userName, token: token })
+    );
   });
 };
 

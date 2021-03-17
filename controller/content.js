@@ -3,7 +3,7 @@ const uuid = require("uuid");
 const multer = require("multer");
 
 exports.createContent = (req, res) => {
-  const { userId, userName, title, content, description } = req.body;
+  const { userId, title, content, description } = req.body;
   console.log(req.body);
   console.log(userId);
 
@@ -36,7 +36,7 @@ exports.storage = multer.diskStorage({
     if (isValid) {
       err = null;
     }
-    callback(err, "data/imageData");
+    callback(err, "./data/imageData");
   },
   filename: (req, file, callback) => {
     const name = file.originalname.toLocaleLowerCase.split(" ").join("-");
