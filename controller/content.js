@@ -3,13 +3,15 @@ const uuid = require("uuid");
 const multer = require("multer");
 
 exports.createContent = (req, res) => {
-  const { userId, title, content, description } = req.body;
-  console.log(req.body);
+  const { title, contentName, description } = req.body;
+  const userId = req.userData.userId;
+  console.log("userId:");
   console.log(userId);
+  console.log(req.body);
 
   const sql = `INSERT INTO content (id, user_id, title, content, description, created_at) VALUES (${db.escape(
     uuid.v4()
-  )}, '${userId}', ${db.escape(title)}, ${db.escape(content)}, ${db.escape(
+  )}, '${userId}', ${db.escape(title)}, ${db.escape(contentName)}, ${db.escape(
     description
   )}, now());`;
 
@@ -39,8 +41,10 @@ exports.storage = multer.diskStorage({
     callback(err, "./data/imageData");
   },
   filename: (req, file, callback) => {
-    const name = file.originalname.toLocaleLowerCase.split(" ").join("-");
+    const name = file.originalname.toLocaleLowerCase().split(" ").join("-");
     const ext = MIME_TYPE_MAP[file.mimetype];
-    callback(null, name + "-" + Date.now() + "." + ext);
+    const fullName = name + "-" + Date.now() + "." + ext;
+    req.body.contentName = fullName;
+    callback(null, fullName);
   },
 });

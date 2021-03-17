@@ -10,13 +10,12 @@ const {
 exports.isLoggedIn = (req, res, next) => {
   const authorization = req.headers.authorization || "";
   const token = authorization.split(" ")[1];
-  console.log(token);
   const secret = "dadawafasfEEAFAEafeaar234r3qw";
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
       return res.status(401).send({ msg: "unautorized" });
     }
-    req.body.userId = decoded.id;
+    req.userData = {userId: decoded.id};
     next();
   });
 };

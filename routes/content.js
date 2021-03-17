@@ -11,7 +11,7 @@ router
   // .get(getContent)
   .post(
     isLoggedIn,
-    requirementsFullfilled,
+    // requirementsFullfilled,
     multer({ storage: storage }).single("content"),
     createContent
   );

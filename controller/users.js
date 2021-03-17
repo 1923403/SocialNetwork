@@ -56,7 +56,11 @@ exports.login = (req, res) => {
       res
         .status(200)
         // .cookie("token", token)
-        .send({ msg: "logged in", user: userName, token: token })
+        .send({ 
+          msg: "logged in", 
+          user: userName,
+          expiresIn: "3600", //for setting timer in frontend 
+          token: token })
     );
   });
 };
