@@ -128,7 +128,8 @@ exports.getProfile = (req, res) => {
     FROM users
     INNER JOIN content 
     ON users.id = content.user_id
-    WHERE LOWER(users.user_name) = LOWER(${db.escape(userName)});`;
+    WHERE LOWER(users.user_name) = LOWER(${db.escape(userName)})
+    ORDER BY content.created_at DESC;`;
   db.query(sql, (err, result) => {
     if (err) return res.status(500).send({ msg: "internal error" });
 
