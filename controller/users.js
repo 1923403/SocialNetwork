@@ -56,11 +56,12 @@ exports.login = (req, res) => {
       res
         .status(200)
         // .cookie("token", token)
-        .send({ 
-          msg: "logged in", 
+        .send({
+          msg: "logged in",
           user: userName,
-          expiresIn: "3600", //for setting timer in frontend 
-          token: token })
+          expiresIn: "3600", //for setting timer in frontend
+          token: token,
+        })
     );
   });
 };
@@ -117,5 +118,72 @@ exports.deleteUser = (req, res) => {
     } else {
       res.status(200).send({ msg: `${req.body.userName} was deleted` });
     }
+  });
+};
+
+exports.getProfile = (req, res) => {
+  const userName = req.params.id;
+  const sql = `SELECT users.user_name, users.email, users.visibility, 
+    content.id, content.title, content.content, content.description, content.created_at 
+    FROM users
+    INNER JOIN content 
+    ON users.id = content.user_id
+    WHERE LOWER(users.user_name) = LOWER(${db.escape(userName)});`;
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).send({ msg: "internal error" });
+
+    const sqlFollowing = `SELECT follows.user_id, users.user_name
+                          FROM follows
+                          INNER JOIN users
+                          ON follows.user_id = users.id
+                          WHERE follows.follower_id = 
+                          (SELECT users.id 
+                            FROM users 
+                            WHERE LOWER(users.user_name) = 
+                            LOWER(${db.escape(userName)}))`;
+    db.query(sqlFollowing, (err, resultFollowing) => {
+      if (err) console.log(err);
+
+      if (result) {
+        let user = {
+          name: userName,
+          email: result[0].email,
+          profilePicture:
+            Math.random() > 0.5
+              ? "http://localhost:3000/image/img_avatar_m.png"
+              : "http://localhost:3000/image/img_avatar_w.png",
+          posts: [],
+          follower: [
+            {
+              name: "test",
+              profilePicture:
+                Math.random() > 0.5
+                  ? "http://localhost:3000/image/img_avatar_m.png"
+                  : "http://localhost:3000/image/img_avatar_w.png",
+            },
+          ],
+          following: [],
+        };
+        for (let i = 0; i < result.length; i++) {
+          user.posts.push({
+            userName: result[i]["user_name"],
+            title: result[i]["title"],
+            description: result[i]["description"],
+            createdAt: result[i]["created_at"],
+            content: result[i]["content"],
+          });
+        }
+        for (let i = 0; i < resultFollowing.length; i++) {
+          user.following.push({
+            userName: resultFollowing[i]["user_name"],
+            profilePicture:
+              Math.random() > 0.5
+                ? "http://localhost:3000/image/img_avatar_m.png"
+                : "http://localhost:3000/image/img_avatar_w.png",
+          });
+        }
+        res.status(200).send({ user });
+      }
+    });
   });
 };
