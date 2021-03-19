@@ -48,3 +48,32 @@ exports.storage = multer.diskStorage({
     callback(null, fullName);
   },
 });
+
+exports.getContent = (userName) => {
+  const sql = `SELECT content.id, content.title, content.content, content.description, content.created_at 
+  FROM content 
+  INNER JOIN users
+  ON users.id = content.user_id
+  WHERE LOWER(users.user_name) = LOWER(${db.escape(userName)})
+  ORDER BY content.created_at DESC;`;
+
+  return new Promise(resolve => {
+    db.query(sql, (err, result)=> {
+      if(err)
+        console.log(err)
+      let posts = [];
+      if(result)
+        for(let i = 0; i< result.length; i++){
+          const post = {
+            id : result[i].id,
+            title: result[i].title,
+            content: result[i].content,
+            description: result[i].description,
+            createdAt: result[i].created_at
+          }
+          posts.push(post);
+        }
+      resolve(posts);
+    })
+  })
+}

@@ -2,6 +2,8 @@ const { db } = require("../lib/db");
 const uuid = require("uuid");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { getContent } = require('./content');
+const { getFollower, getFollowing} = require('./follow');
 
 exports.create = (req, res) => {
   const password = req.body.password;
@@ -121,70 +123,46 @@ exports.deleteUser = (req, res) => {
   });
 };
 
-exports.getProfile = (req, res) => {
-  const userName = req.params.id;
-  const sql = `SELECT users.user_name, users.email, users.visibility, 
-    content.id, content.title, content.content, content.description, content.created_at 
-    FROM users
-    INNER JOIN content 
-    ON users.id = content.user_id
-    WHERE LOWER(users.user_name) = LOWER(${db.escape(userName)})
-    ORDER BY content.created_at DESC;`;
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).send({ msg: "internal error" });
-
-    const sqlFollowing = `SELECT follows.user_id, users.user_name
-                          FROM follows
-                          INNER JOIN users
-                          ON follows.user_id = users.id
-                          WHERE follows.follower_id = 
-                          (SELECT users.id 
-                            FROM users 
-                            WHERE LOWER(users.user_name) = 
-                            LOWER(${db.escape(userName)}))`;
-    db.query(sqlFollowing, (err, resultFollowing) => {
-      if (err) console.log(err);
-
-      if (result) {
-        let user = {
-          name: userName,
-          email: result[0].email,
-          profilePicture:
-            Math.random() > 0.5
-              ? "http://localhost:3000/image/img_avatar_m.png"
-              : "http://localhost:3000/image/img_avatar_w.png",
-          posts: [],
-          follower: [
-            {
-              name: "test",
-              profilePicture:
-                Math.random() > 0.5
-                  ? "http://localhost:3000/image/img_avatar_m.png"
-                  : "http://localhost:3000/image/img_avatar_w.png",
-            },
-          ],
-          following: [],
-        };
-        for (let i = 0; i < result.length; i++) {
-          user.posts.push({
-            userName: result[i]["user_name"],
-            title: result[i]["title"],
-            description: result[i]["description"],
-            createdAt: result[i]["created_at"],
-            content: result[i]["content"],
-          });
-        }
-        for (let i = 0; i < resultFollowing.length; i++) {
-          user.following.push({
-            userName: resultFollowing[i]["user_name"],
-            profilePicture:
-              Math.random() > 0.5
-                ? "http://localhost:3000/image/img_avatar_m.png"
-                : "http://localhost:3000/image/img_avatar_w.png",
-          });
-        }
-        res.status(200).send({ user });
+function getUser(req){
+  const profileName = req.params.id;
+  const ownUserId = req.userData.userId;
+  const sql = `SELECT users.id, users.user_name, users.email, users.visibility, (SELECT IF((${db.escape(ownUserId)} = users.id), 'owner', follows.state)) AS state
+  FROM users
+  LEFT JOIN follows
+  ON users.id = follows.user_id AND (follows.follower_id = ${db.escape(ownUserId)})
+  WHERE LOWER(users.user_name) = LOWER(${db.escape(profileName)});`;
+  return new Promise(resolve => {
+    console.log(sql)
+    db.query(sql, (err, result)=>{
+      if(err){
+        console.log(err);
+        return null;
       }
-    });
-  });
+    const user = {
+      name: profileName,
+      email: result[0].email,
+      state: result[0].state,
+      profilePicture: Math.random() > 0.5
+      ? "http://localhost:3000/image/img_avatar_m.png"
+      : "http://localhost:3000/image/img_avatar_w.png",
+    }
+    resolve(user);
+  })
+})
+}
+
+exports.getProfile = async (req, res) => {
+  const userName = req.params.id;
+  const user = await getUser(req);
+  if(!user){
+    return res.status(404).send({msg: 'user not found'});
+  }
+  const content = await getContent(userName)
+  const follower = await getFollower(userName)
+  const following = await getFollowing(userName)
+  user.posts = content;
+  user.follower = follower;
+  user.following = following;
+  console.log(user)
+  res.status(200).send({ user });
 };

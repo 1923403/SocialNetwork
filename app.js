@@ -6,7 +6,7 @@ const cors = require("cors");
 
 // Route files
 const contentRouter = require("./routes/content");
-// const followRouter = require('./routes/follow');
+const followRouter = require('./routes/follow');
 const newsfeedRouter = require("./routes/newsfeed");
 const usersRouter = require("./routes/users");
 const imageRouter = require("./routes/image");
@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 
 app.use("/content", contentRouter);
-// app.use('/follow', followRouter);
+app.use('/follow', followRouter);
 app.use("/newsfeed", newsfeedRouter);
 app.use("/users", usersRouter);
 app.use("/image", imageRouter);
