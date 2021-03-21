@@ -2,8 +2,8 @@ const { db } = require("../lib/db");
 const uuid = require("uuid");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { getContent } = require('./content');
-const { getFollower, getFollowing} = require('./follow');
+const { getContent } = require("./content");
+const { getFollower, getFollowing } = require("./follow");
 
 exports.create = (req, res) => {
   const password = req.body.password;
@@ -123,46 +123,54 @@ exports.deleteUser = (req, res) => {
   });
 };
 
-function getUser(req){
+function getUser(req) {
   const profileName = req.params.id;
   const ownUserId = req.userData.userId;
-  const sql = `SELECT users.id, users.user_name, users.email, users.visibility, (SELECT IF((${db.escape(ownUserId)} = users.id), 'owner', follows.state)) AS state
+  const sql = `SELECT users.id, users.user_name, users.email, users.visibility, (SELECT IF((${db.escape(
+    ownUserId
+  )} = users.id), 'owner', follows.state)) AS state
   FROM users
   LEFT JOIN follows
-  ON users.id = follows.user_id AND (follows.follower_id = ${db.escape(ownUserId)})
+  ON users.id = follows.user_id AND (follows.follower_id = ${db.escape(
+    ownUserId
+  )})
   WHERE LOWER(users.user_name) = LOWER(${db.escape(profileName)});`;
-  return new Promise(resolve => {
-    console.log(sql)
-    db.query(sql, (err, result)=>{
-      if(err){
+  return new Promise((resolve) => {
+    console.log(sql);
+    db.query(sql, (err, result) => {
+      if (err) {
         console.log(err);
         return null;
       }
-    const user = {
-      name: profileName,
-      email: result[0].email,
-      state: result[0].state,
-      profilePicture: Math.random() > 0.5
-      ? "http://localhost:3000/image/img_avatar_m.png"
-      : "http://localhost:3000/image/img_avatar_w.png",
-    }
-    resolve(user);
-  })
-})
+      const user = {
+        name: profileName,
+        email: result[0].email,
+        state: result[0].state,
+        profilePicture: getRandomImg(),
+      };
+      resolve(user);
+    });
+  });
+}
+
+function getRandomImg() {
+  return Math.random() > 0.5
+    ? "http://localhost:3000/image/img_avatar_m.png"
+    : "http://localhost:3000/image/img_avatar_w.png";
 }
 
 exports.getProfile = async (req, res) => {
   const userName = req.params.id;
   const user = await getUser(req);
-  if(!user){
-    return res.status(404).send({msg: 'user not found'});
+  if (!user) {
+    return res.status(404).send({ msg: "user not found" });
   }
-  const content = await getContent(userName)
-  const follower = await getFollower(userName)
-  const following = await getFollowing(userName)
+  const content = await getContent(userName);
+  const follower = await getFollower(userName);
+  const following = await getFollowing(userName);
   user.posts = content;
   user.follower = follower;
   user.following = following;
-  console.log(user)
+  console.log(user);
   res.status(200).send({ user });
 };

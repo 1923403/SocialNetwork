@@ -16,7 +16,6 @@ exports.follow = (req, res) => {
           
             now()
         );`;
-        //168bf2ce-16f9-4e77-be13-e8ccd0231dbf
   db.query(sql, (err, result) => {
     if (err) {
       console.log(err);
@@ -36,18 +35,18 @@ exports.getFollower = (userName) => {
                             FROM users 
                             WHERE LOWER(users.user_name) = 
                             LOWER(${db.escape(userName)}))`;
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     db.query(sql, (err, result) => {
-      if(err)
-        console.log(err);
-        let follower = []
-        if(result)
-          for(let i = 0; i< result.length; i++){
-            follower.push({
-              id: result[i].follower_id,
-              userName: result[i].user_name
-            })
-          }
+      if (err) console.log(err);
+      let follower = [];
+      if (result)
+        for (let i = 0; i < result.length; i++) {
+          follower.push({
+            id: result[i].follower_id,
+            name: result[i].user_name,
+            profilePicture: getRandomImg(),
+          });
+        }
       resolve(follower);
     });
   });
@@ -63,19 +62,25 @@ exports.getFollowing = (userName) => {
                             FROM users 
                             WHERE LOWER(users.user_name) = 
                             LOWER(${db.escape(userName)}))`;
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     db.query(sql, (err, result) => {
-      if(err)
-        console.log(err);
-      let following = []
-      if(result)
-        for(let i = 0; i< result.length; i++){
+      if (err) console.log(err);
+      let following = [];
+      if (result)
+        for (let i = 0; i < result.length; i++) {
           following.push({
             id: result[i].user_id,
-            userName: result[i].user_name
-          })
+            name: result[i].user_name,
+            profilePicture: getRandomImg(),
+          });
         }
       resolve(following);
     });
   });
+};
+
+function getRandomImg() {
+  return Math.random() > 0.5
+    ? "http://localhost:3000/image/img_avatar_m.png"
+    : "http://localhost:3000/image/img_avatar_w.png";
 }
